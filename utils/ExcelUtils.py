@@ -1,5 +1,5 @@
 import xlrd
-book = xlrd.open_workbook('./resource/data.xlsx')
+book = xlrd.open_workbook('../resources/data.xlsx')
 
 for sheet in book.sheets():
     print(sheet.name)
