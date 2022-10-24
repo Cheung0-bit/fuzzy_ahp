@@ -1,6 +1,6 @@
 class Topsis:
-  lang_var = ''
-  tfn = ()
+  lang_var = '' # 语言变量
+  tfn = () # 三角模糊数
   
   def __init__(self, lang_var, tfn):
     self.lang_var = lang_var
