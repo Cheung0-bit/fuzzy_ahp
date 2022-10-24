@@ -27,4 +27,3 @@ class FactorRes:
     self.B5 = B5
     self.C1 = C1
     self.C2 = C2
-  
