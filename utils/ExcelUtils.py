@@ -3,7 +3,6 @@ from utils.StringUtils import bracketsSoup
 from model.FactorFeedback import FactorFeedback
 from model.SchemeFeedback import SchemeFeedback
 
-
 book = xlrd.open_workbook('../resources/data.xlsx')
 
 factorSheet = book.sheet_by_name('因素反馈')

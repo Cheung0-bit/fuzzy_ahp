@@ -1,33 +1,21 @@
-class Fuzzy:
-  'TOPSIS语言变量'
-  lang_var = '' # 语言变量
-  stfn = '' # 简单三角模糊数
-  tfn = () # 三角模糊数
-  reciprocal = () # 倒数
-  
-  def __init__(self, lang_var, stfn, tfn, reciprocal):
-    self.lang_var = lang_var
-    self.stfn = stfn
-    self.tfn = tfn
-    self.reciprocal = reciprocal
-  
-  def displayFuzzy(self):
-    print("语言变量: {}\t简单三角模糊数: {}\t三角模糊数: {}\t倒数: {}".format(self.lang_var,self.stfn,self.tfn,self.reciprocal))
+FUZZY_TABLE = {}
 
-FUZZY_TABLE = []
-FUZZY_TABLE.append(Fuzzy('同等重要', '1', (1,1,1),(1,1,1)))
-FUZZY_TABLE.append(Fuzzy('几乎同等重要', '1`', (1,1,1),(1,1,1)))
-FUZZY_TABLE.append(Fuzzy('两者之间', '2`', (1,1,1),(1,1,1)))
-FUZZY_TABLE.append(Fuzzy('稍微重要', '3`', (1,1,1),(1,1,1)))
-FUZZY_TABLE.append(Fuzzy('两者之间', '4`', (1,1,1),(1,1,1)))
-FUZZY_TABLE.append(Fuzzy('重要', '5`', (1,1,1),(1,1,1)))
-FUZZY_TABLE.append(Fuzzy('两者之间', '6`', (1,1,1),(1,1,1)))
-FUZZY_TABLE.append(Fuzzy('很重要', '7`', (1,1,1),(1,1,1)))
-FUZZY_TABLE.append(Fuzzy('两者之间', '8`', (1,1,1),(1,1,1)))
-FUZZY_TABLE.append(Fuzzy('非常重要', '9`', (1,1,1),(1,1,1)))
+FUZZY_TABLE['1'] = (1, 1, 1)
+FUZZY_TABLE['1`'] = (1, 1, 3)
+FUZZY_TABLE['2`'] = (1, 2, 4)
+FUZZY_TABLE['3`'] = (1, 3, 5)
+FUZZY_TABLE['4`'] = (2, 4, 6)
+FUZZY_TABLE['5`'] = (3, 5, 7)
+FUZZY_TABLE['6`'] = (4, 6, 8)
+FUZZY_TABLE['7`'] = (5, 7, 9)
+FUZZY_TABLE['8`'] = (6, 8, 10)
+FUZZY_TABLE['9`'] = (7, 9, 11)
 
-  
-    
-  
-
-  
+FUZZY_TABLE['0.5`'] = (1 / 4, 1 / 2, 1)
+FUZZY_TABLE['0.3333333333333333`'] = (1 / 5, 1 / 3, 1)
+FUZZY_TABLE['0.25`'] = (1 / 6, 1 / 4, 1 / 2)
+FUZZY_TABLE['0.2`'] = (1 / 7, 1 / 5, 1 / 3)
+FUZZY_TABLE['0.16666666666666666`'] = (1 / 8, 1 / 6, 1 / 4)
+FUZZY_TABLE['0.14285714285714285`'] = (1 / 9, 1 / 7, 1 / 5)
+FUZZY_TABLE['0.125`'] = (1 / 10, 1 / 8, 1 / 6)
+FUZZY_TABLE['0.1111111111111111`'] = (1 / 11, 1 / 9, 1 / 7)
