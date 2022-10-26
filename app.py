@@ -9,7 +9,7 @@ from model.Fuzzy import FUZZY_TABLE
 
 group_1 = [[0, 0, 2, 4, 2, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 2, 6], [0, 0, 0, 0, 0, 3, 5, 0, 0, 0],
            [0, 1, 6, 1, 0, 0, 0, 0, 0, 0]]
-group_2 = [[0, 0, 2, 4, 2, 0, 3, 5, 0, 0], [0, 0, 0, 0, 4, 4, 0, 0, 0, 0], ]
+group_2 = [[0, 0, 0, 0, 0, 0, 3, 5, 0, 0], [0, 0, 0, 0, 4, 4, 0, 0, 0, 0], ]
 group_3 = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 8], [0, 0, 0, 0, 0, 0, 2, 4, 2, 0], [0, 0, 0, 1, 5, 2, 0, 0, 0, 0],
            [0, 0, 2, 5, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 2, 6]]
 group_4 = [[0, 0, 0, 0, 0, 0, 0, 0, 4, 4], [0, 0, 0, 1, 2, 2, 3, 0, 0, 0]]
@@ -69,8 +69,8 @@ resList = [A1, A2, B1, B2, B3, B4, B5, C1, C2, D1]
 fmsb = SchemeFeedback(resList)  # FMSB
 
 schme_list = [soil_bentonite, soil_cement, msb, fmsb]  # 方案集合
-
 st_group_list = []  # 简单三角模糊判断矩阵集合
+pi = []  # pi分量和
 
 
 def start(X):
@@ -105,7 +105,9 @@ def divide(X, Y):
         lower_limit = start_up / end_down
         upper_limit = end_up / start_down
         res = X.index(max(X)) / Y.index(max(Y))
-        if res >= lower_limit and res <= upper_limit:
+        if lower_limit > 1 and upper_limit < 2:
+            res = 1.0
+        elif res >= lower_limit and res <= upper_limit:
             res = ceil(res)
         else:
             res = floor(res)
@@ -150,11 +152,32 @@ def convert():
         for j in range(var2):
             var3 = len(st_group_list[i][j])
             for k in range(var3):
+                if st_group_list[i][j][k] == 1.0:
+                    st_group_list[i][j][k] = 1
                 key = str(st_group_list[i][j][k]) + '`'
                 st_group_list[i][j][k] = FUZZY_TABLE.get(key)
 
 
+# 圈乘的实现
+def circle_multiplication(x, y):
+    z = (x[0] * y[0], x[1] * y[1], x[2] * y[2])
+    return z
+
+
+def calc_pi():
+    for st_group in st_group_list:
+        for st in st_group:
+            var = len(st)
+            res = (0, 0, 0)
+            for i in range(var):
+                print(st[i])
+                # res[0] += st[i][0]
+                # res[1] += st[i][1]
+                # res[2] += st[i][2]
+            pi.append(res)
+
 if __name__ == '__main__':
+    print(divide(group_4[0],group_4[1]))
     # 1.求三角模糊判断矩阵
     get_stmatrix()
     # 打印简单三角模糊矩阵
@@ -164,19 +187,20 @@ if __name__ == '__main__':
         print('第{}组:'.format(i + 1), end=' ')
         print(st_group_list[i])
 
-    # 2.进行简单三角模糊矩阵一致性检验 判断CR是否符合标准
-    print('====开始检测CR====')
-    calc_cr()
-
-    # 3.将简单三角模糊矩阵转换为三角模糊判断矩阵
-    print('====简单三角模糊矩阵--->三角模糊判断矩阵====')
-    convert()
-    print('处理结果:')
-    size = len(st_group_list)
-    for i in range(size):
-        print('第{}组:'.format(i + 1), end=' ')
-        print(st_group_list[i])
-
-
-
+    # # 2.进行简单三角模糊矩阵一致性检验 判断CR是否符合标准
+    # print('====开始检测CR====')
+    # calc_cr()
+    #
+    # # 3.将简单三角模糊矩阵转换为三角模糊判断矩阵
+    # print('====简单三角模糊矩阵--->三角模糊判断矩阵====')
+    # convert()
+    # print('处理结果:')
+    # size = len(st_group_list)
+    # for i in range(size):
+    #     print('第{}组:'.format(i + 1), end=' ')
+    #     print(st_group_list[i])
+    #
+    # # 4.确定各分组三角模糊判断矩阵模糊综合度Si
+    # print('====开始计算Si====')
+    # calc_pi()
     # print('ok')
