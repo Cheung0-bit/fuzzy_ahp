@@ -1,3 +1,4 @@
+# Deprecated
 class SchmeRes:
   A1 = [] # 建设费用
   A2 = [] # 维护费用

@@ -1,3 +1,4 @@
+# Deprecated
 class FactorRes:
   A = [] #费用
   B = [] # 安全性
