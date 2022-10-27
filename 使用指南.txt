@@ -1,0 +1,12 @@
+准备excel文件（专家意见收集）：
+将「因素反馈」和「方案反馈」按照本项目resources目录下的data.xlsx格式填写
+填写excel文件需要命名成data.xlsx并且放在resources目录下
+
+准备python环境：
+如果是Windows环境可以前往 https://www.python.org/downloads/release/python-3110/ 下载最新的python
+然后配置好环境变量
+
+运行：
+如果是Windows环境直接双击start.bat
+如果是Linux环境直接执行". start.sh"指令
+
