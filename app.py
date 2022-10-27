@@ -3,7 +3,7 @@ import sys
 import numpy as np
 from model.FactorFeedback import FactorFeedback
 from model.SchemeFeedback import SchemeFeedback
-from math import ceil
+from model.Topsis import TOPSIS_TABLE
 from model.Ri import Ri
 from model.Fuzzy import FUZZY_TABLE
 
@@ -71,9 +71,10 @@ fmsb = SchemeFeedback(resList)  # FMSB
 schme_list = [soil_bentonite, soil_cement, msb, fmsb]  # 方案集合
 st_group_list = []  # 简单三角模糊判断矩阵集合
 pi = []  # pi分量和
-sigma_sigma = [] # 双sigma求和中间值
-si = [] # si 综合模糊度
-relative_importance_index = []
+sigma_sigma = []  # 双sigma求和中间值
+si = []  # si 综合模糊度
+relative_importance_index = [] # 相对重要指数
+construction_cost = []  # 方案花费
 
 def start(X):
     # 求取起始偏移量
@@ -211,6 +212,24 @@ def calc_si():
             array.append(circle_multiplication(pi[i][j], temp))
         si.append(array)
 
+
+# TODO 这里需要修改 因为并不是所有的单个都在最后一个 所以需要建立关系 这里默认按照顺序严格逻辑来处理程序
+def calc_relative_im_index():
+    var1 = si[0] # 第一组
+    var2 = len(var1) # 第一组的长度
+    for i in range(var2):
+        var3 = []
+        if i + 1 < var2:
+            for index in si[i+1]:
+                var3.append(circle_multiplication(var1[i],index))
+        else:
+            var3.append(var1[i])
+        relative_importance_index.append(var3)
+
+def calc_construction_cost():
+    for i in schme_list:
+        print(i.resList)
+
 if __name__ == '__main__':
     # 1.求三角模糊判断矩阵
     get_stmatrix()
@@ -250,4 +269,10 @@ if __name__ == '__main__':
     print(si)
 
     # 7.计算 Relative importance index
-    print('Relative importance index')
+    print('====开始计算Relative importance index====')
+    calc_relative_im_index()
+    print(relative_importance_index)
+
+    # 8.计算Construction Cost
+    print('====下面开始计算Construction Cost====')
+    calc_construction_cost()
