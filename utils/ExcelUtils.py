@@ -8,7 +8,7 @@ def change_null_to_zero(my_list):
     return [0 if x == '' else int(x) for x in my_list]
 
 
-def build_factor_and_scheme_by_excel(group_list, factor_table: FactorFeedback, schme_list):
+def build_factor_and_scheme_by_excel(group_list, factor_table: FactorFeedback, schme_list, scheme_name_list):
     book = xlrd.open_workbook('./resources/data.xlsx')  # 请在resources同级目录下使用
 
     factor_sheet = book.sheet_by_name('因素反馈')
@@ -28,20 +28,23 @@ def build_factor_and_scheme_by_excel(group_list, factor_table: FactorFeedback, s
 
     scheme_sheet = book.sheet_by_name('方案反馈')
     res = []
-    # scheme_group_list = []
+    scheme = ''
     for i in range(scheme_sheet.nrows):
         if i < 2:
             continue
         row = scheme_sheet.row_values(i)
-        scheme = row[0]
-        if scheme != '' and i != 2:
+        scheme2 = row[0]
+        if row[0] != '':
+            scheme = row[0]
+            scheme_name_list.append(scheme)
+        if scheme2 != '' and i != 2:
             schme_list.append(SchemeFeedback(res))
-            res = [change_null_to_zero([0]+row[2:])]
+            res = [[scheme]+change_null_to_zero(row[2:])]
         else:
-            res.append(change_null_to_zero([0]+row[2:]))
+            res.append([scheme]+change_null_to_zero(row[2:]))
     schme_list.append(SchemeFeedback(res))
 
     # print("hello")
 
 
-build_factor_and_scheme_by_excel([], FactorFeedback([]), [])
+build_factor_and_scheme_by_excel([], FactorFeedback([]), [], [])

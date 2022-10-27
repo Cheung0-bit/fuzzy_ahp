@@ -1,9 +1,9 @@
+import functools
 import sys
 from math import sqrt
 
 import numpy as np
 from model.FactorFeedback import FactorFeedback
-from model.SchemeFeedback import SchemeFeedback
 from model.Topsis import TOPSIS_TABLE
 from model.Ri import Ri
 from model.Fuzzy import FUZZY_TABLE
@@ -13,11 +13,12 @@ from utils.ExcelUtils import build_factor_and_scheme_by_excel
 group_list = []
 factor_table = FactorFeedback([])  # 因素反馈
 # 方案反馈表 schme_list
-soil_bentonite = SchemeFeedback([])  # 土-膨润土
-soil_cement = SchemeFeedback([])  # 土-水泥
-msb = SchemeFeedback([])  # MSB
-fmsb = SchemeFeedback([])  # FMSB
+# soil_bentonite = SchemeFeedback([])  # 土-膨润土
+# soil_cement = SchemeFeedback([])  # 土-水泥
+# msb = SchemeFeedback([])  # MSB
+# fmsb = SchemeFeedback([])  # FMSB
 schme_list = []  # 方案集合
+scheme_name_list = []  # 方案名列表
 
 factor_count = 8  # 评价因子
 
@@ -28,15 +29,17 @@ si = []  # si 综合模糊度
 relative_importance_index = []  # 相对重要指数
 construction_cost = []  # 方案花费
 rij = []  # 中间值
-vij = []  # 归一化中间值
+vij = []  # 归一化中间值 权重化的三角模糊决定矩阵
 d_star = []  # d*
 d_minus = []  # d-
 cci = []  # cci
+cci_with_name = []  # 带方案名的cci
 rank = {}  # 排名
 
 
 def init_data():
-    build_factor_and_scheme_by_excel(group_list, factor_table, schme_list)
+    build_factor_and_scheme_by_excel(group_list, factor_table, schme_list, scheme_name_list)
+
 
 def print_data():
     print("====group_list====")
@@ -45,6 +48,7 @@ def print_data():
     print("====schme_list====")
     for i in schme_list:
         print(i.resList)
+
 
 def start(X):
     # 求取起始偏移量
@@ -93,6 +97,39 @@ def divide(X, Y):
         return int(res + 0.5)
 
 
+# 圈乘的实现
+def circle_multiplication(x, y):
+    z = (x[0] * y[0], x[1] * y[1], x[2] * y[2])
+    return z
+
+
+def get_max_in_all(array):
+    var = []
+    for i in array:
+        var.append(max(i))
+    return max(var)
+
+
+def process_relative_importance_index():
+    target = []
+    for i in relative_importance_index:
+        for j in i:
+            target.append(j)
+    return target
+
+
+def show_as_group(my_list):
+    size = len(my_list)
+    for i in range(size):  # 根据下标可以确定数据所在的组
+        print('第{}组:'.format(i + 1), end=' ')
+        print(my_list[i])
+
+
+def comp(x, y):
+    return y[1] - x[1]
+
+
+# ==========================================计算主流程============================================
 def get_stmatrix():
     # 计算简单三角模糊判断矩阵
     for group in group_list:
@@ -138,12 +175,6 @@ def convert():
                         st_group_list[i][j][k] = 1
                     key = str(st_group_list[i][j][k]) + '`'
                 st_group_list[i][j][k] = FUZZY_TABLE.get(key)
-
-
-# 圈乘的实现
-def circle_multiplication(x, y):
-    z = (x[0] * y[0], x[1] * y[1], x[2] * y[2])
-    return z
 
 
 def calc_pi():
@@ -204,7 +235,7 @@ def calc_construction_cost():
             var1 = [0, 0, 0]
             var2 = len(index)
             for j in range(var2):
-                if index[j] != 0:
+                if isinstance(index[j], int) and index[j] != 0:
                     var3 = TOPSIS_TABLE.get(str(j))
                     var1[0] += index[j] * var3[0]
                     var1[1] += index[j] * var3[1]
@@ -216,13 +247,6 @@ def calc_construction_cost():
         construction_cost.append(var)
 
 
-def get_max_in_all(array):
-    var = []
-    for i in array:
-        var.append(max(i))
-    return max(var)
-
-
 def calc_rij():
     for i in construction_cost:
         var = []
@@ -230,14 +254,6 @@ def calc_rij():
         for j in i:
             var.append((j[0] / max_num, j[1] / max_num, j[2] / max_num))
         rij.append(var)
-
-
-def process_relative_importance_index():
-    target = []
-    for i in relative_importance_index:
-        for j in i:
-            target.append(j)
-    return target
 
 
 def calc_vij():
@@ -281,12 +297,13 @@ if __name__ == '__main__':
     # print_data()
     # 1.求三角模糊判断矩阵
     get_stmatrix()
-    # 打印简单三角模糊矩阵
+    # 打印简单三角模糊矩阵 🐕
     print('====简单三角模糊矩阵计算完成====')
-    size = len(st_group_list)
-    for i in range(size):
-        print('第{}组:'.format(i + 1), end=' ')
-        print(st_group_list[i])
+    # size = len(st_group_list)
+    # for i in range(size):  # 根据下标可以确定数据所在的组
+    #     print('第{}组:'.format(i + 1), end=' ')
+    #     print(st_group_list[i])
+    show_as_group(st_group_list)
 
     # 2.进行简单三角模糊矩阵一致性检验 判断CR是否符合标准
     print('====开始检测CR====')
@@ -296,58 +313,78 @@ if __name__ == '__main__':
     print('====简单三角模糊矩阵--->三角模糊判断矩阵====')
     convert()
     print('处理结果:')
-    size = len(st_group_list)
-    for i in range(size):
-        print('第{}组:'.format(i + 1), end=' ')
-        print(st_group_list[i])
+    show_as_group(st_group_list)
 
     # 4.计算Pi
     print('====开始计算Pi====')
     calc_pi()
-    print(pi)
+    show_as_group(pi)
 
     # 5.获取全矩阵分量求和SIGMA AND SIGMA
     print('====开始计算全矩阵分量和====')
     calc_sigma_sigma()
-    print(sigma_sigma)
+    show_as_group(sigma_sigma)
 
     # 6.确定各分组三角模糊判断矩阵模糊综合度Si
     print('====开始计算Si====')
     calc_si()
-    print(si)
+    show_as_group(si)
 
     # 7.计算 Relative importance index
     print('====开始计算Relative importance index====')
     calc_relative_im_index()
-    print(relative_importance_index)
+    show_as_group(relative_importance_index)
 
     # 8.计算Construction Cost
     print('====下面开始计算Construction Cost====')
     calc_construction_cost()
-    print(construction_cost)
+    show_as_group(construction_cost)
 
     # 9.计算RIJ
     print('====开始计算RIJ====')
     calc_rij()
-    print(rij)
+    show_as_group(rij)
 
     # 10.计算VIJ
     print('====开始计算VIJ====')
     calc_vij()
-    print(vij)
+    show_as_group(vij)
 
     # 11.计算d*和d-
     print('====开始计算d*和d-====')
     calc_double_d()
-    print(d_star)
-    print(d_minus)
+    print('====d*如下：====')
+    size = len(d_star)
+    for i in range(size):  # 根据下标可以确定数据所在的组
+        print(scheme_name_list[i] + ":", end=' ')
+        print(d_star[i])
+    print('====d-如下：====')
+    size = len(d_minus)
+    for i in range(size):  # 根据下标可以确定数据所在的组
+        print(scheme_name_list[i] + ":", end=' ')
+        print(d_minus[i])
+    print('==== d- + d* 如下：====')
+    for i in range(size):  # 根据下标可以确定数据所在的组
+        print(scheme_name_list[i] + ":", end=' ')
+        print(d_minus[i] + d_star[i])
 
     # 12.Closeness coefficient （cci）
     print('====开始计算CCI====')
     calc_cci()
-    print(cci)
+    size = len(cci)
+    for i in range(size):  # 根据下标可以确定数据所在的组
+        print(scheme_name_list[i] + ":", end=' ')
+        print(cci[i])
+        cci_with_name.append([scheme_name_list[i]] + [cci[i]])
+
+    # # 13.进行Rank
+    # print('===下面开始RANK====')
+    # do_rank()
+    # print(rank)
 
     # 13.进行Rank
-    print('===下面开始RANK====')
-    do_rank()
-    print(rank)
+    print('===下面开始RANK===')
+    cci_with_name.sort(key=functools.cmp_to_key(comp))
+    size = len(cci_with_name)
+    for i in range(size):  # 根据下标可以确定数据所在的组
+        print('第{}名方案为：'.format(i + 1) + cci_with_name[i][0] + "   贴进度为：{}".format(cci_with_name[i][1]))
