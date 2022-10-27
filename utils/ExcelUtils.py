@@ -3,31 +3,45 @@ from utils.StringUtils import bracketsSoup
 from model.FactorFeedback import FactorFeedback
 from model.SchemeFeedback import SchemeFeedback
 
-book = xlrd.open_workbook('../resources/data.xlsx')
 
-factorSheet = book.sheet_by_name('因素反馈')
-for i in range(factorSheet.nrows):
-    row = factorSheet.row_values(i)
-    factor = bracketsSoup(row[0])
+def change_null_to_zero(my_list):
+    return [0 if x == '' else int(x) for x in my_list]
+
+
+def build_factor_and_scheme_by_excel(group_list, factor_table: FactorFeedback, schme_list):
+    book = xlrd.open_workbook('./resources/data.xlsx')  # 请在resources同级目录下使用
+
+    factor_sheet = book.sheet_by_name('因素反馈')
     res = []
-    if factor != '':
-        res.append([factor, row[1:]])
-        FactorFeedback.resList.append(res)
+    for i in range(factor_sheet.nrows):
+        if i < 2:
+            continue
+        row = factor_sheet.row_values(i)
+        factor = bracketsSoup(row[0])
+        if factor != '':
+            res.append(change_null_to_zero([0]+row[1:]))
+        elif i != 2:  # 如果不是第一组
+            group_list.append(res)
+            res = []
+    group_list.append(res)  # 接收最后一组
+    factor_table.set_resList(group_list)
 
-schemeSheet = book.sheet_by_name('方案反馈')
-scheme = ''
-for i in range(schemeSheet.nrows):
-    row = schemeSheet.row_values(i)
-    if row[0] != '':
+    scheme_sheet = book.sheet_by_name('方案反馈')
+    res = []
+    # scheme_group_list = []
+    for i in range(scheme_sheet.nrows):
+        if i < 2:
+            continue
+        row = scheme_sheet.row_values(i)
         scheme = row[0]
-    factor = bracketsSoup(row[1])
-    res = []
-    if factor != '':
-        res.append([scheme, factor, row[1:]])
-        SchemeFeedback.resList.append(res)
+        if scheme != '' and i != 2:
+            schme_list.append(SchemeFeedback(res))
+            res = [change_null_to_zero([0]+row[2:])]
+        else:
+            res.append(change_null_to_zero([0]+row[2:]))
+    schme_list.append(SchemeFeedback(res))
 
-for item in FactorFeedback.resList:
-    print(item)
+    # print("hello")
 
-for item in SchemeFeedback.resList:
-    print(item)
+
+build_factor_and_scheme_by_excel([], FactorFeedback([]), [])

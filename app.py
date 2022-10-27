@@ -7,70 +7,20 @@ from model.SchemeFeedback import SchemeFeedback
 from model.Topsis import TOPSIS_TABLE
 from model.Ri import Ri
 from model.Fuzzy import FUZZY_TABLE
+from utils.ExcelUtils import build_factor_and_scheme_by_excel
 
-group_1 = [[0, 0, 2, 4, 2, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 2, 6], [0, 0, 0, 0, 0, 3, 5, 0, 0, 0],
-           [0, 1, 6, 1, 0, 0, 0, 0, 0, 0]]
-group_2 = [[0, 0, 0, 0, 0, 0, 3, 5, 0, 0], [0, 0, 0, 0, 4, 4, 0, 0, 0, 0], ]
-group_3 = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 8], [0, 0, 0, 0, 0, 0, 2, 4, 2, 0], [0, 0, 0, 1, 5, 2, 0, 0, 0, 0],
-           [0, 0, 2, 5, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 2, 6]]
-group_4 = [[0, 0, 0, 0, 0, 0, 0, 0, 4, 4], [0, 0, 0, 1, 2, 2, 3, 0, 0, 0]]
-group_list = [group_1, group_2, group_3, group_4]
-factor_table = FactorFeedback(group_list)
-
-A1 = [0, 0, 0, 0, 5, 3]
-A2 = [0, 0, 0, 0, 6, 2]
-B1 = [0, 0, 0, 0, 0, 8]
-B2 = [0, 7, 1, 0, 0, 0]
-B3 = [0, 0, 4, 4, 0, 0]
-B4 = [0, 0, 4, 4, 0, 0]
-B5 = [0, 0, 0, 0, 6, 2]
-C1 = [0, 0, 0, 8, 0, 0]
-C2 = [0, 0, 0, 8, 0, 0]
-D1 = [0, 0, 0, 0, 4, 4]
-resList = [A1, A2, B1, B2, B3, B4, B5, C1, C2, D1]
-soil_bentonite = SchemeFeedback(resList)  # 土-膨润土
-
-A1 = [0, 2, 6, 0, 0, 0]
-A2 = [0, 0, 5, 3, 0, 0]
-B1 = [0, 5, 3, 0, 0, 0]
-B2 = [0, 0, 0, 0, 0, 8]
-B3 = [0, 0, 0, 3, 5, 0]
-B4 = [0, 0, 0, 2, 6, 0]
-B5 = [0, 0, 0, 0, 7, 1]
-C1 = [0, 0, 0, 8, 0, 0]
-C2 = [0, 0, 1, 7, 0, 0]
-D1 = [0, 2, 5, 1, 0, 0]
-resList = [A1, A2, B1, B2, B3, B4, B5, C1, C2, D1]
-soil_cement = SchemeFeedback(resList)  # 土-水泥
-
-A1 = [0, 0, 0, 6, 2, 0]
-A2 = [0, 0, 5, 3, 0, 0]
-B1 = [0, 0, 0, 0, 4, 4]
-B2 = [0, 0, 0, 0, 1, 7]
-B3 = [0, 0, 0, 0, 2, 6]
-B4 = [0, 0, 0, 0, 2, 6]
-B5 = [0, 2, 5, 1, 0, 0]
-C1 = [0, 0, 0, 8, 0, 0]
-C2 = [0, 0, 1, 7, 0, 0]
-D1 = [0, 0, 0, 8, 0, 0]
-resList = [A1, A2, B1, B2, B3, B4, B5, C1, C2, D1]
-msb = SchemeFeedback(resList)  # MSB
-
-A1 = [0, 0, 5, 3, 0, 0]
-A2 = [0, 0, 5, 3, 0, 0]
-B1 = [0, 0, 0, 0, 4, 4]
-B2 = [0, 0, 0, 0, 1, 7]
-B3 = [0, 0, 0, 0, 2, 6]
-B4 = [0, 0, 0, 0, 2, 6]
-B5 = [0, 0, 0, 2, 5, 1]
-C1 = [0, 0, 0, 8, 0, 0]
-C2 = [0, 0, 1, 7, 0, 0]
-D1 = [0, 0, 0, 8, 0, 0]
-resList = [A1, A2, B1, B2, B3, B4, B5, C1, C2, D1]
-fmsb = SchemeFeedback(resList)  # FMSB
+# 在init_data中初始化
+group_list = []
+factor_table = FactorFeedback([])  # 因素反馈
+# 方案反馈表 schme_list
+soil_bentonite = SchemeFeedback([])  # 土-膨润土
+soil_cement = SchemeFeedback([])  # 土-水泥
+msb = SchemeFeedback([])  # MSB
+fmsb = SchemeFeedback([])  # FMSB
+schme_list = []  # 方案集合
 
 factor_count = 8  # 评价因子
-schme_list = [soil_bentonite, soil_cement, msb, fmsb]  # 方案集合
+
 st_group_list = []  # 简单三角模糊判断矩阵集合
 pi = []  # pi分量和
 sigma_sigma = []  # 双sigma求和中间值
@@ -84,6 +34,17 @@ d_minus = []  # d-
 cci = []  # cci
 rank = {}  # 排名
 
+
+def init_data():
+    build_factor_and_scheme_by_excel(group_list, factor_table, schme_list)
+
+def print_data():
+    print("====group_list====")
+    for i in group_list:
+        print(i)
+    print("====schme_list====")
+    for i in schme_list:
+        print(i.resList)
 
 def start(X):
     # 求取起始偏移量
@@ -315,6 +276,9 @@ def do_rank():
 
 
 if __name__ == '__main__':
+    # 0.初始化数据
+    init_data()
+    # print_data()
     # 1.求三角模糊判断矩阵
     get_stmatrix()
     # 打印简单三角模糊矩阵
