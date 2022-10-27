@@ -1,4 +1,5 @@
 import sys
+from math import sqrt
 
 import numpy as np
 from model.FactorFeedback import FactorFeedback
@@ -68,13 +69,21 @@ D1 = [0, 0, 0, 8, 0, 0]
 resList = [A1, A2, B1, B2, B3, B4, B5, C1, C2, D1]
 fmsb = SchemeFeedback(resList)  # FMSB
 
+factor_count = 8  # 评价因子
 schme_list = [soil_bentonite, soil_cement, msb, fmsb]  # 方案集合
 st_group_list = []  # 简单三角模糊判断矩阵集合
 pi = []  # pi分量和
 sigma_sigma = []  # 双sigma求和中间值
 si = []  # si 综合模糊度
-relative_importance_index = [] # 相对重要指数
+relative_importance_index = []  # 相对重要指数
 construction_cost = []  # 方案花费
+rij = []  # 中间值
+vij = []  # 归一化中间值
+d_star = []  # d*
+d_minus = []  # d-
+cci = []  # cci
+rank = {}  # 排名
+
 
 def start(X):
     # 求取起始偏移量
@@ -215,20 +224,95 @@ def calc_si():
 
 # TODO 这里需要修改 因为并不是所有的单个都在最后一个 所以需要建立关系 这里默认按照顺序严格逻辑来处理程序
 def calc_relative_im_index():
-    var1 = si[0] # 第一组
-    var2 = len(var1) # 第一组的长度
+    var1 = si[0]  # 第一组
+    var2 = len(var1)  # 第一组的长度
     for i in range(var2):
         var3 = []
         if i + 1 < var2:
-            for index in si[i+1]:
-                var3.append(circle_multiplication(var1[i],index))
+            for index in si[i + 1]:
+                var3.append(circle_multiplication(var1[i], index))
         else:
             var3.append(var1[i])
         relative_importance_index.append(var3)
 
+
 def calc_construction_cost():
     for i in schme_list:
-        print(i.resList)
+        var = []
+        for index in i.resList:
+            var1 = [0, 0, 0]
+            var2 = len(index)
+            for j in range(var2):
+                if index[j] != 0:
+                    var3 = TOPSIS_TABLE.get(str(j))
+                    var1[0] += index[j] * var3[0]
+                    var1[1] += index[j] * var3[1]
+                    var1[2] += index[j] * var3[2]
+            var1[0] /= factor_count
+            var1[1] /= factor_count
+            var1[2] /= factor_count
+            var.append(tuple(var1))
+        construction_cost.append(var)
+
+
+def get_max_in_all(array):
+    var = []
+    for i in array:
+        var.append(max(i))
+    return max(var)
+
+
+def calc_rij():
+    for i in construction_cost:
+        var = []
+        max_num = get_max_in_all(i)
+        for j in i:
+            var.append((j[0] / max_num, j[1] / max_num, j[2] / max_num))
+        rij.append(var)
+
+
+def process_relative_importance_index():
+    target = []
+    for i in relative_importance_index:
+        for j in i:
+            target.append(j)
+    return target
+
+
+def calc_vij():
+    target = process_relative_importance_index()
+    for index in rij:
+        var = []
+        var1 = len(index)
+        for i in range(var1):
+            var.append(circle_multiplication(index[i], target[i]))
+        vij.append(var)
+
+
+def calc_double_d():
+    for i in vij:
+        _d_star = 0
+        _d_minus = 0
+        for j in i:
+            _d_star += sqrt(1 / 3 * (pow(j[0] - 1, 2) + pow(j[1] - 1, 2) + pow(j[2] - 1, 2)))
+            _d_minus += sqrt(1 / 3 * (pow(j[0], 2) + pow(j[1], 2) + pow(j[2], 2)))
+        d_star.append(_d_star)
+        d_minus.append(_d_minus)
+
+
+def calc_cci():
+    var = len(d_star)
+    for i in range(var):
+        cci.append(d_minus[i] / (d_star[i] + d_minus[i]))
+
+
+def do_rank():
+    count = 1
+    while len(cci) != 0:
+        rank['第{}名方案cc值'.format(count)] = max(cci)
+        count += 1
+        cci.remove(max(cci))
+
 
 if __name__ == '__main__':
     # 1.求三角模糊判断矩阵
@@ -276,3 +360,30 @@ if __name__ == '__main__':
     # 8.计算Construction Cost
     print('====下面开始计算Construction Cost====')
     calc_construction_cost()
+    print(construction_cost)
+
+    # 9.计算RIJ
+    print('====开始计算RIJ====')
+    calc_rij()
+    print(rij)
+
+    # 10.计算VIJ
+    print('====开始计算VIJ====')
+    calc_vij()
+    print(vij)
+
+    # 11.计算d*和d-
+    print('====开始计算d*和d-====')
+    calc_double_d()
+    print(d_star)
+    print(d_minus)
+
+    # 12.Closeness coefficient （cci）
+    print('====开始计算CCI====')
+    calc_cci()
+    print(cci)
+
+    # 13.进行Rank
+    print('===下面开始RANK====')
+    do_rank()
+    print(rank)
